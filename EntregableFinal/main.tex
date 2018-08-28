@@ -1,0 +1,244 @@
+\documentclass[letter, 10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage[top=3cm,bottom=3cm,left=3.5cm,right=3.5cm,footskip=1.5cm,headheight=1.5cm,headsep=.5cm,textheight=3cm]{geometry}
+
+
+
+\begin{document}
+
+
+\title{Inteligencia Artificial \\ \begin{Large}Entrega Final: Radiotherapy Scheduling Problem\end{Large}}
+\author{Jose Miranda Acuña}
+\date{\today}
+\maketitle
+
+
+
+
+
+\begin{abstract}
+
+Este documento describe el problema de programación de pacientes de radioterapia para minimizar los tiempos de espera. Al igual que muchos otros problemas de la industria de servicios, la programación de pacientes con radioterapia se puede resolver modelando primero y formulándola en un problema de programación de la tienda. Con el paso de los años, estos modelos de programación de talleres han sido investigados y resueltos utilizando diversos enfoques. Este documento tipifica la programación de pacientes de radioterapia en un problema de tienda de trabajo. Además, los enfoques exactos y metaheurísticos para resolver problemas de programación de taller de trabajo también se revisan y se analizan de forma comparativa. De esta forma la terapia por radiación es fundamental en el tratamiento del cáncer y dados los escasos recursos de maquinaria y especialistas, agendar un sistema dinamico de pacientes con distintos grados de urgencia se transforma en un problema de optimización combinatorial. Derivado del scheduling tradicional se presentan diversos enfoques y estrategias en una revisión de la literatura sobre el problema y se presenta uno de los modelos de programación lineal entera usado en una de las publicaciones referenciadas.
+
+\end{abstract}
+
+\newpage
+
+\section{Introducci\'on}
+
+En el siguiente documento se encontrará información en detalle del problema de Selección y Planificación de horarios de Radioterapias para Pacientes con Cancer, lo cual es un grna problema si pensamos en todas las restricciones posibles que se puedan dar. Es así que se comenzará por definir el problema, detallando variables, restricciones y objetivos, luego daremos a conocer el Estado del Arte, lo que se ha echo hasta el día de hoy, nombrando a autores, universidades y textos que se pueden encontrar en las referencias, mostrando resultados de investigaciones de rendimiento de estas soluciones. Para terminar con la parte de investigación, definiremos un modelo para el problema, con sus respectivas variables, restricciones y funciones objetivo a fines a la resolución que cada quien quiera darle.
+
+La \textbf{Terapia por radiación}, también llamada \textbf{radioterapia} (abreviada RT, RTx en ingles), es una terapia que utiliza radiación ionizante, generalmente como parte del tratamiento del cáncer para controlar celulas malignas. Es un componente clave en el tratamiento curativo (radical) y paliativo del cáncer. Los pacientes son tratados usando un haz de rayos X de alta energía en áreas precisas del tumor, usando una maquina llamada \emph{linear particle accelerator} o \emph{linac}. Cerca del $40\%$ de los pacientes tratados con radioterapia logran eliminar completamente o reducir de gran manera sus cánceres.
+\\La radioterapia se va aplicando en forma de dosis de radiación, de forma que las células cancerigenas no logren recuperarse pero si las células sanas que las rodean.
+\\El tratamiento es planificado por un equipo multidiciplinario e incluye varias fases, desde los diagnosticos, una etapa de pretratamiento y el tratamiento per sé.
+\\El problema aquí es la planificación de las sesiones de los pacientes, de forma que reciban sus tratamientos de forma oportuna y efectiva, en un mundo con recursos limitados tanto en maquinaria como especialistas, se trata de un problema de optimización combinatorial.
+\\En este informe se dara una rápida revisión a la literatura refererente a este problema, en la sección dos se presenta una definición del problema, con enfasis en la sección tres un status quo de la investigación en el problema y en la sección cuatro un modelo de programación lineal entera extraido de otro estudio, conclusiones en la sección cinco.
+
+\section{Definici\'on del Problema}
+
+El Problema de programación de radioterapia, es un gran problema, ya que se está hablando de la realización de tratamientos para una de las enfermedades mas letales para las personas, el Cancer. Entonces el problema a raiz de ¿Cómo podemos organizar a Pacientes, doctores, maquinarias, hospitales o lugares de atención, para poder salvar la vida de todas las personas?, todo esto teniendo en cuenta que los Pacientes pueden tener diferentes grados de gravedad, que los doctores pueden tener distintos horarios de atención según su demanda, las maquinarias pueden tener intervalos de tiempos de uso, por ejemplo para que descansen las maquinas, etc, y a todo esto sumarle que existe un límite de tiempo para realizarle la radioterapia a una paciente, sino éste se nos muere. Al Ser éste un problema muy conocido por sus gran cantidad de variables y restricciones, podemos fácilmente escalarlo para la resolución de muchos problema de Scheduling, donde aparecen escenarios como, Earliest Due Date (EDD), Shortest Processing Time (SPT), Longest Processing Time (LPT), Cost Over Time (COVERT) \cite{TKapamara2014}, para la realización de diferentes algoritmos de selección.
+
+Un problema de \emph{scheduling} puede ser definido como la organización de recursos en pos de cumplir objetivos y requisitos\cite{pinedo2016scheduling}, en ese sentido, el \emph{scheduling} en radioterapia hace referencia al problema de organizar y planificar las distintas estapas del tratamiento (consultas, planificación, pre-tratamiento y tratamiento per sé) para una variedad de pacientes con distintos niveles de gravedad y urgencia, en distintas etapas del tratamiento y con agendas cambiantes, es decir algunos pacientes pueden faltar a sesiones, dejar de ir permanentemene (ya sea por muerte del paciente u otros motivos), también pueden surgir nuevos pacientes.
+\\Dado que el problema consiste en agendar pacientes, el problema se conoce como \emph{radiotherapy patient scheduling problem (RTPS)}.
+\\Siempre se debe tener en mente el objetivo de minimizar el tiempo que cada paciente a la espera de recibir sus sesiones, esto es ''el tiempo de espera", ya que de esta forma se contribuye a reducir el número de víctimas del cáncer. Para lograr este objetivo se necesita optimizar el uso de recursos disponibles, estos son los médicos, las maquinas \emph{linac}, camillas, recursos hospitalarios en general, etc. De esta forma se mejora de forma global el servicio entregado.
+\\Se puede abordar este problema con dos objetivos en mente, se puede plantear el problema con el objetivo de minimizar el tiempo de espera desde el diagnostico hasta su primera sesion, como tambien se puede minimizar la duración total del tratamiento, o ambas a la vez.
+\\Dado el hecho de que nuevos pacientes de diferente gravedad pueden aparecer de forma imprevista, el RTPS puede clasificarse como un problema de \emph{dinamico}, que involucra las posibles perturbaciones dinamicas que son las que le dan la complejidad a este tipo de problemas. Ademas de eso, también tenemos incertidumbre en cuanto a las demoras que tendran las maquinas, en procesamiento y en configuracion, esto vuelve al problema dinamico un problema de \emph{scheduling} dinamico estocastico\cite{kapamara2006review}.
+\\Los parametros comunes con los que se define este problema son un conjunto de pacientes, donde cada paciente también tendra un peso asociado que indica su nivel de urgencia. Un conjunto de doctores, equipos, maquinas, etc. Y un conjunto de operaciones medicas que deben realizarse en el tratamiento de un determinado paciente. Una operacion medica es por ejemplo una consulta con un medico, el uso de una maquina, etc, algo que consume recursos, seria la actividad de un problema de scheduling.
+\\Este problema esta sujeto a restricciones triviales respecto a la capacidad maxima de utilización de los recursos disponibles, o sea no vamos a ocupar mas recursos de los que existen. También hay que tener en cuenta que los doctores tienen horarios fijos predefinidos, un paciente no puede tener dos sesiones el mismo dia, y hay un tiempo máximo de espera impuesto por ley.
+
+\newpage
+
+\section{Estado del Arte}
+
+Hoy en día existen muchos estudios recientes, ya que en principio la Radioterapia como tal, es un tratamiento que empezó a surgir en el año 1989, y se fue masificando su uso, a lo largo del tiempo, lo que comenzó a que la gente con Cancer, empezara a demandar este tratamiento. Es ahí en donde diferentes investigadores comenzaron a hacer sus estudios, tales como memorías, que dieran propuestas a resoluciones de éste problema de selección de pacientes bajo diferentes niveles de gravedad.
+
+Comenzaremos por decir que podemos ver este problema como un modelo de programación lineal entera, que comienza a surgir en el Reino Unido, específicamente desde  Nottingham University Hospitals NHS Trust. Más allá de estas investigaciones están las de Kapamara (2006) y el Petrovic (2009) \cite{petrovic} que los dos tenían algo en común, de poder dividir éste problema, como una invetigación considerando una pre-radioterapia y una radioterapia como tal. Para estás investigaciones existen diferentes enfoques para ver el problema, el primero es el de experimentos con el día de creación de la programación de la radioterapia del paciente, el cual consiste en hacer cambios a la politíca de programación para contrarestar el efecto de que cuando el paciente llega para realizarce una radioterapia, se tenga que evaluar todas las restricciones como de horarios del doctor, maquinas, hospital, etc. Entonces se le da la posibilidad al paciente de una elección de día para así realizar las reservar pertinentes. Lo que dió algunos resultados favorables que podemos ver en la tabla 1.
+
+
+
+\begin{figure}[h]
+    \begin{center}
+         \includegraphics[width=15cm]{table1.png}\\
+    \end{center}
+    \caption{Tabla 1}
+\end{figure}
+
+\newpage
+
+Donde "JMax" y "JGood" son los porcentaje ponderado de pacientes que pierden sus objetivos máximos aceptables y buenas prácticas de JCCO, respectivamente, y "Esperando" es el tiempo promedio de espera ponderado por paciente.
+
+Otro enfoque que se le da al problema es el de Experimentos con número máximo de días de anticipación (MNDA), en este enfoque consideramos dos fechas muy importantes, una es la de programación del tratamiento de radioterapia, y otra es la fecha de lanzamiento, Es así que viendo este enfoque en comparativa con el anterior no es muy recomendable la elección del día al momento que llega al paciente a la consulta, ya que estas dos fechas recién mencionadas, pueden estar muy separadas. Entonces las idea es que la fecha de lanzamiento se vuelva más cercana, esto podría brindar mejores oportunidades de horarios de buena calidad para los pacientes que llegarán en un futuro cercano, al tiempo que se obtiene un buen rendimiento para los pacientes actuales. Es así como el número máximo de días por adelantado se introduce para limitar la creación de horarios basados en la fecha de lanzamiento del paciente. El rendimiento de éste enfoque puedes verlo en detalle en la siguiente tabla 2.
+
+\begin{figure}[h]
+    \begin{center}
+         \includegraphics[width=14cm]{table2.png}\\
+    \end{center}
+    \caption{Tabla 2}
+\end{figure}
+
+\newpage
+
+\section{Modelo Matem\'atico}
+
+\subsection{Modelo de Programación Lineal Entera}
+
+El problema descrito puede ser formulado por la representación siguiente:
+
+\subsubsection{Variables:}
+
+\begin{itemize}
+    \item $M_{i}$ número de maquinas de radioterapia
+    \item $N_{j}$ número de pacientes para escoger
+    \item $M_{j}$ conjunto de maquinas que pueden emitir los tipos de radiación requeridos para el paciente
+    \item $W_{j}$ conjunto de días de la seamna cuando el paciente j está permitido tener su primera sesión tomando en consideración sí el paciente puede recibir el tratamiento un fin de semana, el número de sesiones que un paciente puede tener a lo más antes del primer fin de semana y los días que el doctor está presente en el hospital
+    \item $w_{j}$ peso asignado a cada paciente, según gravedad.
+    \item $b_{j}$ fecha cuando el paciente reserva
+    \item $r_{j}$ fecha de lanzamiento del paciente
+    \item $d_{j}^{1}$ fecha de incumplimiento por la cual el paciente j debe comenzar el tratamiento según lo establecido por el Departamento
+de salud
+    \item $d_{j}^{2}$ fecha máxima aceptable por la cual el paciente j debe comenzar el tratamiento según lo establecido por Junta Consejo de Oncología Clínica
+    \item $d_{j}^{3}$ buena fecha de práctica por la cual el paciente j debe comenzar el tratamiento según lo establecido por la Junta
+Consejo de Oncología Clínica
+    \item T número de días en el horizonte de programación
+    \item k indice de días en el horizonte de programación
+    \item $q_{k}$ día de la seana de un día k ($q_{k} \in \{Lun,...,Dom\}$)
+    \item $c_{ik}$ capacidad disponible de una maquina i en un día k, dada en minutos
+    \item $S_{j}$ número de sesiones de un paciente j (l=1,...,$S_{j}$)
+    \item $p_{jl}$ duración de sesiones l de un paciente j, dada en minutos
+    \item $u_{jkl}$ número de días de un paciente j pueda esperar entre la sesión l y la sesión $l+1$, sí una sesión l es escogida un día k, o 0 sí la sesión l y $l+1$ están en el mismo día.
+\end{itemize}
+
+El modelo está compuesto de solo un conjunto de variables de decisión.
+
+$x_{ijkl} = 1$, sí la sesión l de un paciente j es escogida un día k en una maquina i.
+$x_{ijkl} = 0$, en otro caso.
+
+
+
+
+\subsubsection{Restricciones:}
+
+Las primeras restricciones se presentan para garantizar que las sesiones no estén programadas en ningún
+máquina o día Restricción (1) impone que las sesiones del paciente j no están programadas en máquinas que
+no emitan los tipos de radiación requeridos para el paciente j. Restricciones (2) - (4) aseguran que los pacientes estén
+no programado en días inválidos. Restricción (2) impone que el día de cualquier sesión del paciente j no puede
+programarse antes de la fecha de lanzamiento, la restricción (3) garantiza que la primera sesión del paciente es
+8
+no en un día inválido de la semana para ese paciente, y la restricción (4) asegura que no haya otra sesión
+que el primero de cada paciente puede tener lugar el primer día del horizonte de programación.
+
+\subsubsection{Función Objetivo:}
+
+Aquí presentaremos cuatro posibles escenarios que podemos darle a la función objetivo, que dependen de nuestros propositos y/o políticas que querramos darle:
+
+\begin{itemize}
+
+    \item Minimización del número de pacientes que pierden la fecha de incumplimiento:
+
+    \begin{center}
+        $$f_{1}(x) = \sum_{i=1}^{M}\sum_{j=1}^{N}\sum_{k=d_{j}^{1}+1}^T x_{ijk1}$$
+    \end{center}
+
+    \item Minimización del número ponderado de pacientes que pierden el máximo aceptable:
+
+    \begin{center}
+        $$f_{2}(x) = \sum_{i=1}^{M}\sum_{j=1}^{N}\sum_{k=d_{j}^{2}+1}^T w_{j}x_{ijk1}$$
+    \end{center}
+
+    \item Minimización del número ponderado de pacientes que omiten las buenas prácticas:
+
+    \begin{center}
+        $$f_{3}(x) = \sum_{i=1}^{M}\sum_{j=1}^{N}\sum_{k=d_{j}^{3}+1}^T w_{j}x_{ijk1}$$
+    \end{center}
+
+    \item Minimización de los tiempos de espera cuadrados promedio ponderados:
+
+    \begin{center}
+        $$f_{4}(x) = \sum_{i=1}^{M}\sum_{j=1}^{N}\sum_{k=b_{j}+1}^T (k-b_{j})^{2}w_{j}x_{ijk1}$$
+    \end{center}
+
+\end{itemize}
+
+\newpage
+
+\section{Representación}
+
+La representación usada para abordar el problema fue tener un vector de estructuras de la forma que fuese lo más fácil para poder agrupar la información necesaria y solucionar el problema de Scheduling
+
+La estructura tienen la siguiente definición:
+\begin{itemize}
+    \item tiempoAtencionRadicales
+    \item tiempoAtencionPaliativos
+    \item tiempoAtencionUrgentes
+    \item tiempoTratamiento
+    \item tiempoTurno
+    \item turnosPorDia
+    \item nBloques
+    \item nDias
+    \item nMaquinas
+    \item nDoctores
+    \item nPacientes
+    \item NpacR
+    \item NpacP
+    \item NpacU
+\end{itemize}
+
+\section{Experimentos}
+
+Por motivos de tiempo se realizaron experimentos con una sola instancia, la cual nos arrojó asignaciones para los pacientes en 28 días de planificación del Scheduling. Teniendo en consideración las restricciones a cumplir, sobre la disponibilidad de los médicos y las necesidades que tiene cada paciente según su necesidadpor tipo.
+
+\newpage
+
+\section{Resultados}
+
+Los resultados arrojados por consola, representan la calendarización de los tratamientos así como fue solicitado en el enunciado de esta entrega
+
+Una Splash a la solución por consola se puedever en el siguiente enlace:
+\href{https://drive.google.com/file/d/1IzHSBUH1M_DIlnG5B9K-yeht9l7D98dL/view?usp=sharing}{Aquí}
+
+
+\newpage
+\section{Conclusiones}
+
+Esta investigación abarca el problema de programar los tratamientos de pacientes con radioterapia. Un nuevo modelo de programación lineal entero con cuatro criterios de optimización están formulados y los datos para el problema se generan en base a datos del mundo real.
+
+A lo largo de este documento, diferentes políticas para programar tratamientos para pacientes con radioterapia
+fueron experimentadas. para encontrar un horario de buena calidad. Puede valer la pena esperar una acumulación de
+pacientes para aumentar el espacio de búsqueda y encontrar un horario de buena calidad para un número mayor de pacientes Esto se puede hacer, por ejemplo, usando esta herramienta una vez por semana para crear horarios para pacientes.
+
+Los experimentos también sugieren que es mejor no crear cronogramas para pacientes inmediatamente cuando llegan, pero esperar a que su fecha de lanzamiento se vuelva más cercana. Se entiende que los pacientes prefieren saber su horario de tratamiento lo más pronto posible, pero a la vista de las posibles mejoras
+en la calidad de su cronograma, los autores recomiendan esperar a que su fecha de lanzamiento se vuelva más cercana
+antes de crear su horario.
+El trabajo futuro incluye la investigación de técnicas de anticipación para intentar anticipar cuando
+los pacientes de cada categoría pueden llegar en los días siguientes. Criterios para evaluar la solidez de
+una solución con respecto a futuros pacientes también puede ser investigada, así como la implementación de
+políticas de reprogramación.
+Hasta ahora, hemos considerado la asignación de días de tratamiento a los pacientes. Más restricciones serán
+incluido para capturar de manera realista el problema de la programación de la radioterapia en el mundo real, como considerar
+el tiempo de inactividad de la máquina aleatoria, la preferencia del paciente por ser tratado en sesiones matutinas o vespertinas,
+requisitos para el transporte hacia y desde el hospital, etc.
+
+\newpage
+
+\section{Bibliograf\'ia}
+
+\begin{itemize}
+    \item A review of scheduling problems in radiotherapy. T Kapamara, K Sheibani, OCL Haas, CR Reeves, D Petrovic. 2014.
+    \item An Integer Linear Programming Model for the Radiotherapy Treatment Scheduling Problem. Edmund K. Burke Pedro Leite-Rocha Sanja Petrovic. 2011.
+\end{itemize}
+
+\begin{thebibliography}{9}
+\bibitem{TKapamara2014}
+A review of scheduling problems in radiotherapy. T Kapamara, K Sheibani, OCL Haas, CR Reeves, D Petrovic. 2014.
+
+\bibitem{petrovic}
+An Integer Linear Programming Model for the Radiotherapy Treatment Scheduling Problem. Edmund K. Burke Pedro Leite-Rocha Sanja Petrovic. 2011.
+\end{thebibliography}
+
+\end{document} 
